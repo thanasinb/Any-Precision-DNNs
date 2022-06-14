@@ -45,9 +45,9 @@ def main():
     setup_logging(os.path.join(args.results_dir, 'log_{}.txt'.format(hostname)))
     logging.info("running arguments: %s", args)
 
-    best_gpu = setup_gpus()
-    torch.cuda.set_device(best_gpu)
-    torch.backends.cudnn.benchmark = True
+    # best_gpu = setup_gpus()
+    # torch.cuda.set_device(best_gpu)
+    # torch.backends.cudnn.benchmark = True
 
     train_transform = get_transform(args.dataset, 'train')
     train_data = get_dataset(args.dataset, args.train_split, train_transform)
