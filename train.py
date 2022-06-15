@@ -101,10 +101,8 @@ def main():
     num_parameters = sum([l.nelement() for l in model.parameters()])
     logging.info("number of parameters: %d", num_parameters)
 
-    # criterion = nn.CrossEntropyLoss().cuda()
-    # criterion_soft = CrossEntropyLossSoft().cuda()
-    criterion = nn.CrossEntropyLoss()
-    criterion_soft = CrossEntropyLossSoft()
+    criterion = nn.CrossEntropyLoss().cuda()
+    criterion_soft = CrossEntropyLossSoft().cuda()
     sum_writer = SummaryWriter(args.results_dir + '/summary')
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -163,8 +161,8 @@ def forward(data_loader, model, criterion, criterion_soft, epoch, training=True,
     for i, (input, target) in enumerate(data_loader):
         if not training:
             with torch.no_grad():
-                # input = input.cuda()
-                # target = target.cuda(non_blocking=True)
+                input = input.cuda()
+                target = target.cuda(non_blocking=True)
 
                 for bw, am_l, am_t1, am_t5 in zip(bit_width_list, losses, top1, top5):
                     model.apply(lambda m: setattr(m, 'wbit', bw))
@@ -177,8 +175,8 @@ def forward(data_loader, model, criterion, criterion_soft, epoch, training=True,
                     am_t1.update(prec1.item(), input.size(0))
                     am_t5.update(prec5.item(), input.size(0))
         else:
-            # input = input.cuda()
-            # target = target.cuda(non_blocking=True)
+            input = input.cuda()
+            target = target.cuda(non_blocking=True)
 
             optimizer.zero_grad()
 
