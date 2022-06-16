@@ -6,7 +6,7 @@
 
     curr_dir="$( cd "$(dirname "$0")" ; pwd -P )"
     # Change it when necessary
-#    source activate pt
+    # source activate pt
 
     train_id="exp_cifar10_resnet20q_124832_recursive"
     train_stamp="$(date +"%Y%m%d_%H%M%S")"
