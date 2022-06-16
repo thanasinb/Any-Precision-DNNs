@@ -1,9 +1,12 @@
 #!/bin/bash
 
 {
+  pip install tensorboardX
+  pip install gpustat
+
     curr_dir="$( cd "$(dirname "$0")" ; pwd -P )"
     # Change it when necessary
-    source activate pt
+#    source activate pt
 
     train_id="exp_cifar10_resnet20q_124832_recursive"
     train_stamp="$(date +"%Y%m%d_%H%M%S")"
@@ -22,5 +25,7 @@
         --optimizer adam \
         --weight-decay 0.0 \
         --results-dir $result_dir \
-        --bit_width_list "1,2,4,8,32"
+        --bit_width_list "4"
+
+#        --bit_width_list "1,2,4,8,32"
 } && exit
