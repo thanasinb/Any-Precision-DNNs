@@ -119,6 +119,25 @@ class Conv2d_Q(nn.Conv2d):
         super(Conv2d_Q, self).__init__(*kargs, **kwargs)
 
 
+def myconv2d(input, weight, bias=None, stride=(1,1), padding=(0,0), dilation=(1,1), groups=1):
+    """
+    Function to process an input with a standard convolution
+    """
+    batch_size, in_channels, in_h, in_w = input.shape
+    out_channels, in_channels, kh, kw = weight.shape
+    out_h = int((in_h - kh + 2 * padding[0]) / stride[0] + 1)
+    out_w = int((in_w - kw + 2 * padding[1]) / stride[1] + 1)
+    unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
+    inp_unf = unfold(input)
+    w_ = weight.view(weight.size(0), -1).t()
+    if bias is None:
+        out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
+    else:
+        out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
+    out = out_unf.view(batch_size, out_channels, out_h, out_w)
+    return out.float()
+
+
 def conv2d_quantize_fn(bit_list):
     class Conv2d_Q_(Conv2d_Q):
         def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1,
@@ -131,7 +150,7 @@ def conv2d_quantize_fn(bit_list):
 
         def forward(self, input, order=None):
             weight_q = self.quantize_fn(self.weight)
-            return F.conv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            return myconv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
     return Conv2d_Q_
 
