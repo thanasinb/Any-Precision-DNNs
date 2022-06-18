@@ -29,7 +29,11 @@ class Activate(nn.Module):
 
 class PreActBasicBlockQ(nn.Module):
     """Pre-activation version of the BasicBlock.
+
+       TB:
+       Looks like 2 Conv layers
     """
+
     def __init__(self, bit_list, in_planes, out_planes, stride=1):
         super(PreActBasicBlockQ, self).__init__()
         self.bit_list = bit_list
@@ -40,15 +44,15 @@ class PreActBasicBlockQ(nn.Module):
         NormLayer = batchnorm_fn(self.bit_list)
 
         self.bn0 = NormLayer(in_planes)
-        self.act0 = Activate(self.bit_list)
-        self.conv0 = Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.act0 = Activate(self.bit_list)  # Quantized Activations
+        self.conv0 = Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)  # Quantized Weights
         self.bn1 = NormLayer(out_planes)
         self.act1 = Activate(self.bit_list)
         self.conv1 = Conv2d(out_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
 
         self.skip_conv = None
         if stride != 1:
-            self.skip_conv = nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, padding=0, bias=False)
+            self.skip_conv = Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, padding=0, bias=False)
             self.skip_bn = nn.BatchNorm2d(out_planes)
 
     def forward(self, x):
@@ -70,6 +74,11 @@ class PreActBasicBlockQ(nn.Module):
 
 
 class PreActResNet(nn.Module):
+    """
+       TB:
+       Looks like 1 Conv layer followed by 1 Fully-connected layer
+    """
+
     def __init__(self, block, num_units, bit_list, num_classes, expand=5):
         super(PreActResNet, self).__init__()
         self.bit_list = bit_list
@@ -126,7 +135,7 @@ class PreActBottleneckQ(nn.Module):
         self.conv2 = Conv2d(out_planes, out_planes * self.expansion, kernel_size=1, stride=1, bias=False)
         self.downsample = downsample
 
-    def forward(self, x):        
+    def forward(self, x):
         shortcut = self.downsample(x) if self.downsample is not None else x
         out = self.conv0(self.act0(self.bn0(x)))
         out = self.conv1(self.act1(self.bn1(out)))
