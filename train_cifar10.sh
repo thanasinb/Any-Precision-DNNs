@@ -25,7 +25,7 @@
         --optimizer adam \
         --weight-decay 0.0 \
         --results-dir $result_dir \
-        --bit_width_list "4"
+        --bit_width_list "4,4,4,4,4"
 
 #        --bit_width_list "1,2,4,8,32"
 } && exit
