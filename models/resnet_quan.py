@@ -45,7 +45,8 @@ class PreActBasicBlockQ(nn.Module):
 
         self.bn0 = NormLayer(in_planes)
         self.act0 = Activate(self.bit_list)  # Quantized Activations
-        self.conv0 = Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)  # Quantized Weights
+        self.conv0 = Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1,
+                            bias=False)  # Quantized Weights
         self.bn1 = NormLayer(out_planes)
         self.act1 = Activate(self.bit_list)
         self.conv1 = Conv2d(out_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
@@ -86,10 +87,12 @@ class PreActResNet(nn.Module):
         self.abit = self.bit_list[-1]
         self.expand = expand
 
+        Conv2d = conv2d_quantize_fn(self.bit_list)
         NormLayer = batchnorm_fn(self.bit_list)
 
         ep = self.expand
-        self.conv0 = nn.Conv2d(3, 16 * ep, kernel_size=3, stride=1, padding=1, bias=False)
+        # self.conv0 = nn.Conv2d(3, 16 * ep, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv0 = Conv2d(3, 16 * ep, kernel_size=3, stride=1, padding=1, bias=False)
 
         strides = [1] * num_units[0] + [2] + [1] * (num_units[1] - 1) + [2] + [1] * (num_units[2] - 1)
         channels = [16 * ep] * num_units[0] + [32 * ep] * num_units[1] + [64 * ep] * num_units[2]
