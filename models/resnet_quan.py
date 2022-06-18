@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .quan_ops import conv2d_quantize_fn, activation_quantize_fn, batchnorm_fn
+from .quan_ops import conv2d_quantize_fn, activation_quantize_fn, batchnorm_fn, linear_quantize_fn
 
 __all__ = ['resnet20q', 'resnet50q']
 
@@ -88,6 +88,7 @@ class PreActResNet(nn.Module):
         self.expand = expand
 
         Conv2d = conv2d_quantize_fn(self.bit_list)
+        Linear = linear_quantize_fn(self.bit_list)
         NormLayer = batchnorm_fn(self.bit_list)
 
         ep = self.expand
@@ -103,7 +104,7 @@ class PreActResNet(nn.Module):
             in_planes = channel
 
         self.bn = NormLayer(64 * ep)
-        self.fc = nn.Linear(64 * ep, num_classes)
+        self.fc = Linear(64 * ep, num_classes)
 
     def forward(self, x):
         out = self.conv0(x)
