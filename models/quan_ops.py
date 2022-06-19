@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import logging
 
 
 class SwitchBatchNorm2d(nn.Module):
@@ -123,6 +124,11 @@ def myconv2d(input, weight, bias=None, stride=(1,1), padding=(0,0), dilation=(1,
     """
     Function to process an input with a standard convolution
     """
+    logging.info('input')
+    logging.info(input)
+    logging.info('weight')
+    logging.info(weight)
+
     batch_size, in_channels, in_h, in_w = input.shape
     out_channels, in_channels, kh, kw = weight.shape
     out_h = int((in_h - kh + 2 * padding[0]) / stride[0] + 1)
