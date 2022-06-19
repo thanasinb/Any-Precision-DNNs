@@ -93,6 +93,9 @@ class weight_quantize_fn(nn.Module):
             weight_q = weight * E
         else:
             E = torch.mean(torch.abs(x)).detach()
+            logging.info('weight_quantize_fn.E')
+            logging.info(E)
+
             weight = torch.tanh(x)
             weight = weight / 2 / torch.max(torch.abs(weight)) + 0.5
             logging.info('weight_quantize_fn.weight')
