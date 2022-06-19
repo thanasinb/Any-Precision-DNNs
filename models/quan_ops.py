@@ -70,6 +70,9 @@ class qfn(torch.autograd.Function):
     def forward(ctx, input, k):
         n = float(2**k - 1)
         out = torch.round(input * n) / n
+
+        logging.info('qfn.max(input*n)')
+        logging.info(np.max(torch.round(input * n)))
         return out
 
     @staticmethod
