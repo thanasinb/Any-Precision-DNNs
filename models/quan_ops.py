@@ -71,8 +71,8 @@ class qfn(torch.autograd.Function):
         n = float(2**k - 1)
         out = torch.round(input * n) / n
 
-        logging.info('qfn.max(input*n)')
-        logging.info(torch.max(torch.round(input * n)))
+        logging.info('qfn.input*n')
+        logging.info(torch.round(input * n))
         return out
 
     @staticmethod
