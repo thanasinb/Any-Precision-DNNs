@@ -7,11 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import logging
+from collections import namedtuple
 
 
 class SwitchBatchNorm2d(nn.Module):
     """Adapted from https://github.com/JiahuiYu/slimmable_networks
     """
+
     def __init__(self, num_features, bit_list):
         super(SwitchBatchNorm2d, self).__init__()
         self.bit_list = bit_list
@@ -40,6 +42,7 @@ def batchnorm2d_fn(bit_list):
 class SwitchBatchNorm1d(nn.Module):
     """Adapted from https://github.com/JiahuiYu/slimmable_networks
     """
+
     def __init__(self, num_features, bit_list):
         super(SwitchBatchNorm1d, self).__init__()
         self.bit_list = bit_list
@@ -65,10 +68,87 @@ def batchnorm1d_fn(bit_list):
     return SwitchBatchNorm1d_
 
 
+QTensor = namedtuple('QTensor', ['tensor', 'scale', 'zero_point'])
+
+
+def calcScaleZeroPoint(min_val, max_val, num_bits=8):
+    # Calc Scale and zero point of next
+    qmin = 0.
+    qmax = 2. ** num_bits - 1.
+    scale = (max_val - min_val) / (qmax - qmin)
+    initial_zero_point = qmin - min_val / scale
+    zero_point = 0
+
+    if initial_zero_point < qmin:
+        zero_point = qmin
+    elif initial_zero_point > qmax:
+        zero_point = qmax
+    else:
+        zero_point = initial_zero_point
+
+    zero_point = int(zero_point)
+    return scale, zero_point
+
+
+def quantize_tensor(x, num_bits=8):
+    min_val, max_val = x.min(), x.max()
+
+    qmin = 0.
+    qmax = 2. ** num_bits - 1.
+
+    scale, zero_point = calcScaleZeroPoint(min_val, max_val, num_bits)
+    q_x = zero_point + x / scale
+    q_x.clamp_(qmin, qmax).round_()
+    q_x = q_x.round().byte()
+
+    return QTensor(tensor=q_x, scale=scale, zero_point=zero_point)
+
+
+def dequantize_tensor(q_x):
+    return q_x.scale * (q_x.tensor.float() - q_x.zero_point)
+
+
+class FakeQuantOp(torch.autograd.Function):  # equivalent to class qfn(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x, num_bits=8):
+        x = quantize_tensor(x, num_bits=num_bits)
+        x_q = x.tensor  # integer value of the quantized x
+        x_scale = x.scale
+        x = dequantize_tensor(x)
+        return x, x_scale, x_q
+
+    @staticmethod
+    def backward(ctx, grad_output, grad_scale, grad_quantised):
+        # straight through estimator
+        return grad_output, None, None, None, None
+
+
+# def mapMultiplierModel(q_x, q_w):
+#     q_w_t = torch.t(q_w)  # y = x.wT + b
+#
+#     res = torch.zeros([q_x.size(0), q_w_t.size(1)])
+#     for i in range(q_x.size(0)):
+#         for j in range(q_w_t.size(1)):
+#             res[i][j] = sum(lut_diff[q_x[i, :], q_w_t[:, j]])
+#
+#     return res
+
+
+class fake_quantize_fn(nn.Module):  # equivalent to weight_quantize_fn(nn.Module)
+    def __init__(self, bit_list):
+        super(fake_quantize_fn, self).__init__()
+        self.bit_list = bit_list
+        self.wbit = self.bit_list[-1]
+
+    def forward(self, x):
+        x, m_x, q_x = FakeQuantOp.apply(x, self.wbit)  # x = quantized tensor
+        return x, m_x, q_x
+
+
 class qfn(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, k):
-        n = float(2**k - 1)
+        n = float(2 ** k - 1)
         out = torch.round(input * n) / n
 
         logging.info('qfn.input*n')
@@ -135,7 +215,7 @@ class Conv2d_Q(nn.Conv2d):
         super(Conv2d_Q, self).__init__(*kargs, **kwargs)
 
 
-def myconv2d(input, weight, bias=None, stride=(1,1), padding=(0,0), dilation=(1,1), groups=1):
+def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(1, 1), groups=1):
     """
     Function to process an input with a standard convolution
     """
@@ -167,10 +247,12 @@ def conv2d_quantize_fn(bit_list):
                                             bias)
             self.bit_list = bit_list
             self.w_bit = self.bit_list[-1]
-            self.quantize_fn = weight_quantize_fn(self.bit_list)
+            # self.quantize_fn = weight_quantize_fn(self.bit_list)
+            self.quantize_fn = fake_quantize_fn(self.bit_list)
 
         def forward(self, input, order=None):
-            weight_q = self.quantize_fn(self.weight)
+            # weight_q = self.quantize_fn(self.weight)
+            weight_q, weight_scale, weight_int = self.quantize_fn(self.weight)
             return myconv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
     return Conv2d_Q_
