@@ -151,8 +151,8 @@ class qfn(torch.autograd.Function):
         n = float(2 ** k - 1)
         out = torch.round(input * n) / n
 
-        logging.info('qfn.input*n')
-        logging.info(torch.round(input * n))
+        # logging.info('qfn.input*n')
+        # logging.info(torch.round(input * n))
         return out
 
     @staticmethod
@@ -176,21 +176,21 @@ class weight_quantize_fn(nn.Module):
             weight_q = weight * E
         else:
             E = torch.mean(torch.abs(x)).detach()
-            logging.info('weight_quantize_fn.E')
-            logging.info(E)
+            # logging.info('weight_quantize_fn.E')
+            # logging.info(E)
 
             weight = torch.tanh(x)
             weight = weight / 2 / torch.max(torch.abs(weight)) + 0.5
-            logging.info('weight_quantize_fn.weight')
-            logging.info(weight)
+            # logging.info('weight_quantize_fn.weight')
+            # logging.info(weight)
 
             weight_q = 2 * qfn.apply(weight, self.wbit) - 1
-            logging.info('weight_quantize_fn.qfn')
-            logging.info(qfn.apply(weight, self.wbit))
+            # logging.info('weight_quantize_fn.qfn')
+            # logging.info(qfn.apply(weight, self.wbit))
 
             weight_q = weight_q * E
-            logging.info('weight_quantize_fn.weight_q')
-            logging.info(weight)
+            # logging.info('weight_quantize_fn.weight_q')
+            # logging.info(weight)
 
         return weight_q
 
@@ -219,10 +219,10 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     """
     Function to process an input with a standard convolution
     """
-    logging.info('input')
-    logging.info(input)
-    logging.info('weight')
-    logging.info(weight)
+    # logging.info('input')
+    # logging.info(input)
+    # logging.info('weight')
+    # logging.info(weight)
 
     batch_size, in_channels, in_h, in_w = input.shape
     out_channels, in_channels, kh, kw = weight.shape
