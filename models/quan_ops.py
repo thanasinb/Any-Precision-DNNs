@@ -8,6 +8,10 @@ import torch.nn.functional as F
 import numpy as np
 import logging
 from collections import namedtuple
+from lut import lut_actual_15, lut_ideal_15
+
+
+lut_diff = lut_ideal_15 - lut_actual_15
 
 
 class SwitchBatchNorm2d(nn.Module):
@@ -112,10 +116,9 @@ class FakeQuantOp(torch.autograd.Function):  # equivalent to class qfn(torch.aut
     @staticmethod
     def forward(ctx, x, num_bits=8):
         x = quantize_tensor(x, num_bits=num_bits)
-        x_q = x.tensor  # integer value of the quantized x
-        x_scale = x.scale
+        x_qtensor = x
         x = dequantize_tensor(x)
-        return x, x_scale, x_q
+        return x, x_qtensor
 
     @staticmethod
     def backward(ctx, grad_output, grad_scale, grad_quantised):
@@ -123,15 +126,15 @@ class FakeQuantOp(torch.autograd.Function):  # equivalent to class qfn(torch.aut
         return grad_output, None, None, None, None
 
 
-# def mapMultiplierModel(q_x, q_w):
-#     q_w_t = torch.t(q_w)  # y = x.wT + b
-#
-#     res = torch.zeros([q_x.size(0), q_w_t.size(1)])
-#     for i in range(q_x.size(0)):
-#         for j in range(q_w_t.size(1)):
-#             res[i][j] = sum(lut_diff[q_x[i, :], q_w_t[:, j]])
-#
-#     return res
+def mapMultiplierModel(q_x, q_w):
+    q_w_t = torch.t(q_w)  # y = x.wT + b
+
+    res = torch.zeros([q_x.size(0), q_w_t.size(1)])
+    for i in range(q_x.size(0)):
+        for j in range(q_w_t.size(1)):
+            res[i][j] = sum(lut_diff[q_x[i, :], q_w_t[:, j]])
+
+    return res
 
 
 class fake_quantize_fn(nn.Module):  # equivalent to weight_quantize_fn(nn.Module)
@@ -141,8 +144,8 @@ class fake_quantize_fn(nn.Module):  # equivalent to weight_quantize_fn(nn.Module
         self.wbit = self.bit_list[-1]
 
     def forward(self, x):
-        x, m_x, q_x = FakeQuantOp.apply(x, self.wbit)  # x = quantized tensor
-        return x, m_x, q_x
+        x, x_qtensor = FakeQuantOp.apply(x, self.wbit)  # x = quantized tensor
+        return x, x_qtensor
 
 
 class qfn(torch.autograd.Function):
@@ -219,11 +222,6 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     """
     Function to process an input with a standard convolution
     """
-    # logging.info('input')
-    # logging.info(input)
-    # logging.info('weight')
-    # logging.info(weight)
-
     batch_size, in_channels, in_h, in_w = input.shape
     out_channels, in_channels, kh, kw = weight.shape
     out_h = int((in_h - kh + 2 * padding[0]) / stride[0] + 1)
@@ -231,6 +229,30 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
+    if bias is None:
+        out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
+    else:
+        out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
+    out = out_unf.view(batch_size, out_channels, out_h, out_w)
+    return out.float()
+
+
+def myconv2d_lut(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(1, 1), groups=1, input_qtensor, weight_qtensor):
+    """
+    Function to process an input with a standard convolution
+    """
+    batch_size, in_channels, in_h, in_w = input.shape
+    out_channels, in_channels, kh, kw = weight.shape
+    out_h = int((in_h - kh + 2 * padding[0]) / stride[0] + 1)
+    out_w = int((in_w - kw + 2 * padding[1]) / stride[1] + 1)
+    unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
+    inp_unf = unfold(input)
+    w_ = weight.view(weight.size(0), -1).t()
+
+    # loss_c = mapMultiplierModel(input_qtensor.tensor.transpose(1, 2), weight_qtensor.tensor)
+    # compensation = input_qtensor.scale * weight_qtensor.scale * loss_c
+    # x = x - comp
+
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
     else:
@@ -248,12 +270,18 @@ def conv2d_quantize_fn(bit_list):
             self.bit_list = bit_list
             self.w_bit = self.bit_list[-1]
             # self.quantize_fn = weight_quantize_fn(self.bit_list)
-            self.quantize_fn = fake_quantize_fn(self.bit_list)
+            self.fake_quantize_fn_weight = fake_quantize_fn(self.bit_list)
+            self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
+
+        # def forward(self, input, order=None):
+        #     weight_q = self.quantize_fn(self.weight)
+        #     return myconv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
         def forward(self, input, order=None):
-            # weight_q = self.quantize_fn(self.weight)
-            weight_q, weight_scale, weight_int = self.quantize_fn(self.weight)
-            return myconv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            weight_q, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
+            input_q,  input_qtensor  = self.fake_quantize_fn_input(input)
+            # conv_res = myconv2d_lut(input_q, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups, input_qtensor, weight_qtensor)
+            return myconv2d_lut(input_q, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
     return Conv2d_Q_
 
