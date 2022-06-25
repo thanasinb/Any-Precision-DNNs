@@ -311,7 +311,7 @@ def conv2d_quantize_fn(bit_list):
             self.w_bit = self.bit_list[-1]
             # self.quantize_fn = weight_quantize_fn(self.bit_list)
             self.fake_quantize_fn_weight = fake_quantize_fn(self.bit_list)
-            self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
+            # self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
 
         # def forward(self, input, order=None):
         #     weight_q = self.quantize_fn(self.weight)
@@ -321,7 +321,7 @@ def conv2d_quantize_fn(bit_list):
             # weight, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
             # input,  input_qtensor  = self.fake_quantize_fn_input(input)
             weight = self.fake_quantize_fn_weight(self.weight)
-            input  = self.fake_quantize_fn_input(input)
+            # input  = self.fake_quantize_fn_input(input)
             # conv_res = myconv2d_lut(input_q, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups, input_qtensor, weight_qtensor)
             return myconv2d_lut(input, weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
