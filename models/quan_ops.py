@@ -12,7 +12,8 @@ from .lut import lut_actual_15, lut_ideal_15
 
 
 lut_diff = lut_ideal_15 - lut_actual_15
-
+logging.basicConfig(level=logging.DEBUG, filename="log.txt", filemode="a+",
+                    format="%(asctime)-15s %(levelname)-8s %(message)s")
 
 class SwitchBatchNorm2d(nn.Module):
     """Adapted from https://github.com/JiahuiYu/slimmable_networks
