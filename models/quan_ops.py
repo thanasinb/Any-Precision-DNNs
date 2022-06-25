@@ -122,9 +122,11 @@ class FakeQuantOp(torch.autograd.Function):  # equivalent to class qfn(torch.aut
         # return x, x_qtensor
 
     @staticmethod
-    def backward(ctx, grad_output, grad_scale, grad_quantised):
+    def backward(ctx, grad_output):
+    # def backward(ctx, grad_output, grad_scale, grad_quantised):
+
         # straight through estimator
-        return grad_output, None, None, None, None
+        return grad_output, None, None
 
 
 def mapMultiplierModel(q_x, q_w):
