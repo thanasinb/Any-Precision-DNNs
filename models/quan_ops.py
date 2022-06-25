@@ -237,7 +237,7 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     return out.float()
 
 
-def myconv2d_lut(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(1, 1), groups=1, input_qtensor, weight_qtensor):
+def myconv2d_lut(input_qtensor, weight_qtensor, input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(1, 1), groups=1):
     """
     Function to process an input with a standard convolution
     """
@@ -249,14 +249,20 @@ def myconv2d_lut(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilati
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
 
-    # loss_c = mapMultiplierModel(input_qtensor.tensor.transpose(1, 2), weight_qtensor.tensor)
-    # compensation = input_qtensor.scale * weight_qtensor.scale * loss_c
-    # x = x - comp
+    unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
+    inp_qtensor_unf = unfold_qtensor(input_qtensor)
+    w_qtensor_ = weight_qtensor.view(weight_qtensor.size(0), -1).t()
+
+    loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
+    compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
 
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
     else:
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
+
+    out_unf = out_unf - compensation
+
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
     return out.float()
 
