@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import numpy as np
 import logging
 from collections import namedtuple
-from lut import lut_actual_15, lut_ideal_15
+from .lut import lut_actual_15, lut_ideal_15
 
 
 lut_diff = lut_ideal_15 - lut_actual_15
