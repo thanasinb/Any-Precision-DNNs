@@ -12,8 +12,7 @@ from .lut import lut_actual_15, lut_ideal_15
 
 
 lut_diff = lut_ideal_15 - lut_actual_15
-logging.basicConfig(level=logging.DEBUG, filename="log.txt", filemode="a+",
-                    format="%(asctime)-15s %(levelname)-8s %(message)s")
+
 
 class SwitchBatchNorm2d(nn.Module):
     """Adapted from https://github.com/JiahuiYu/slimmable_networks
@@ -250,11 +249,17 @@ def myconv2d_lut(input_qtensor, weight_qtensor, input, weight, bias=None, stride
     unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
-    logging.info(inp_unf)
-    logging.info(w_)
+    logging.info('input (fake quantized): ')
     logging.info(input)
+    logging.info('weight (fake quantized): ')
     logging.info(weight)
+    logging.info('input (fake quantized) unfold: ')
+    logging.info(inp_unf)
+    logging.info('weight (fake quantized) unfold: ')
+    logging.info(w_)
+    logging.info('input qtensor: ')
     logging.info(input_qtensor)
+    logging.info('weight qtensor: ')
     logging.info(weight_qtensor)
 
     unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
