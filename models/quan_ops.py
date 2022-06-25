@@ -245,9 +245,16 @@ def myconv2d_lut(input_qtensor, weight_qtensor, input, weight, bias=None, stride
     out_channels, in_channels, kh, kw = weight.shape
     out_h = int((in_h - kh + 2 * padding[0]) / stride[0] + 1)
     out_w = int((in_w - kw + 2 * padding[1]) / stride[1] + 1)
+
     unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
+    logging.info(inp_unf)
+    logging.info(w_)
+    logging.info(input)
+    logging.info(weight)
+    logging.info(input_qtensor)
+    logging.info(weight_qtensor)
 
     unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
     inp_qtensor_unf = unfold_qtensor(input_qtensor)
@@ -284,10 +291,10 @@ def conv2d_quantize_fn(bit_list):
         #     return myconv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
         def forward(self, input, order=None):
-            weight_q, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
-            input_q,  input_qtensor  = self.fake_quantize_fn_input(input)
+            weight, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
+            input,  input_qtensor  = self.fake_quantize_fn_input(input)
             # conv_res = myconv2d_lut(input_q, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups, input_qtensor, weight_qtensor)
-            return myconv2d_lut(input_qtensor, weight_qtensor, input_q, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            return myconv2d_lut(input_qtensor, weight_qtensor, input, weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
     return Conv2d_Q_
 
