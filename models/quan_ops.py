@@ -118,7 +118,8 @@ class FakeQuantOp(torch.autograd.Function):  # equivalent to class qfn(torch.aut
         x = quantize_tensor(x, num_bits=num_bits)
         x_qtensor = x
         x = dequantize_tensor(x)
-        return x, x_qtensor
+        return x
+        # return x, x_qtensor
 
     @staticmethod
     def backward(ctx, grad_output, grad_scale, grad_quantised):
