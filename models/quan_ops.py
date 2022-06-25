@@ -249,6 +249,11 @@ def myconv2d_lut(input_qtensor, weight_qtensor, input, weight, bias=None, stride
     unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
+
+    unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
+    inp_qtensor_unf = unfold_qtensor(input_qtensor)
+    w_qtensor_ = weight_qtensor.view(weight_qtensor.size(0), -1).t()
+
     logging.info('input (fake quantized): ')
     logging.info(input)
     logging.info('weight (fake quantized): ')
@@ -265,20 +270,28 @@ def myconv2d_lut(input_qtensor, weight_qtensor, input, weight, bias=None, stride
     logging.info(input_qtensor)
     logging.info('weight qtensor: ')
     logging.info(weight_qtensor)
+    logging.info('input qtensor.shape: ')
+    logging.info(input_qtensor.shape)
+    logging.info('weight qtensor.shape: ')
+    logging.info(weight_qtensor.shape)
+    logging.info('input qtensor (fake quantized) unfold: ')
+    logging.info(inp_qtensor_unf)
+    logging.info('weight qtensor (fake quantized) unfold: ')
+    logging.info(w_qtensor_)
+    logging.info('input (fake quantized) unfold.shape: ')
+    logging.info(inp_qtensor_unf.shape)
+    logging.info('weight (fake quantized) unfold.shape: ')
+    logging.info(w_qtensor_.shape)
 
-    unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
-    inp_qtensor_unf = unfold_qtensor(input_qtensor)
-    w_qtensor_ = weight_qtensor.view(weight_qtensor.size(0), -1).t()
-
-    loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
-    compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
+    # loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
+    # compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
 
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
     else:
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
 
-    out_unf = out_unf - compensation
+    # out_unf = out_unf - compensation
 
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
     return out.float()
