@@ -309,8 +309,8 @@ def conv2d_quantize_fn(bit_list):
                                             bias)
             self.bit_list = bit_list
             self.w_bit = self.bit_list[-1]
-            self.quantize_fn = weight_quantize_fn(self.bit_list)
-            # self.fake_quantize_fn_weight = fake_quantize_fn(self.bit_list)
+            # self.quantize_fn = weight_quantize_fn(self.bit_list)
+            self.fake_quantize_fn_weight = fake_quantize_fn(self.bit_list)
             # self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
 
         def forward(self, input, order=None):
