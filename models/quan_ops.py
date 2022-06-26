@@ -244,11 +244,11 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     Function to process an input with a standard convolution
     """
 
-    logging.info('inp_qtensor.tensor')
-    logging.info(inp_qtensor.tensor)
+    logging.info('inp_qtensor')
+    logging.info(inp_qtensor)
 
-    logging.info('wgt_qtensor.tensor')
-    logging.info(wgt_qtensor.tensor)
+    logging.info('wgt_qtensor')
+    logging.info(wgt_qtensor)
     #
     # logging.info('inp.shape')
     # logging.info(inp.shape)
