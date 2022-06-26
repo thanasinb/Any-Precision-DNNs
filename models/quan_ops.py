@@ -244,17 +244,29 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     Function to process an input with a standard convolution
     """
 
-    # logging.info('inp_qtensor.tensor.shape')
-    # logging.info(inp_qtensor.tensor.shape)
-    #
-    # logging.info('wgt_qtensor.tensor.shape')
-    # logging.info(wgt_qtensor.tensor.shape)
-    #
-    # logging.info('inp.shape')
-    # logging.info(inp.shape)
-    #
-    # logging.info('wgt.shape')
-    # logging.info(wgt.shape)
+    logging.info('inp_qtensor.tensor.shape')
+    logging.info(inp_qtensor.tensor.shape)
+
+    logging.info('wgt_qtensor.tensor.shape')
+    logging.info(wgt_qtensor.tensor.shape)
+
+    logging.info('inp.shape')
+    logging.info(inp.shape)
+
+    logging.info('wgt.shape')
+    logging.info(wgt.shape)
+
+    logging.info('inp_qtensor.tensor.type')
+    logging.info(inp_qtensor.tensor.type)
+
+    logging.info('wgt_qtensor.tensor.type')
+    logging.info(wgt_qtensor.tensor.type)
+
+    logging.info('inp.type')
+    logging.info(inp.type)
+
+    logging.info('wgt.type')
+    logging.info(wgt.type)
 
     batch_size, in_channels, in_h, in_w = inp.shape
     out_channels, in_channels, kh, kw = wgt.shape
