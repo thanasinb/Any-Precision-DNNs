@@ -244,11 +244,11 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     Function to process an input with a standard convolution
     """
 
-    logging.info('inp_qtensor')
-    logging.info(inp_qtensor)
-
-    logging.info('wgt_qtensor')
-    logging.info(wgt_qtensor)
+    # logging.info('inp_qtensor')
+    # logging.info(inp_qtensor)
+    #
+    # logging.info('wgt_qtensor')
+    # logging.info(wgt_qtensor)
     #
     # logging.info('inp.shape')
     # logging.info(inp.shape)
@@ -286,17 +286,17 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     inp_qtensor_unf = unfold_qtensor(inp_qtensor.tensor.float())
     w_qtensor_ = wgt_qtensor.tensor.float().view(wgt_qtensor.tensor.float().size(0), -1).t()
 
-    logging.info('inp_unf.shape')
-    logging.info(inp_unf.shape)
-
-    logging.info('w_.shape')
-    logging.info(w_.shape)
-
-    logging.info('inp_qtensor_unf.shape')
-    logging.info(inp_qtensor_unf.shape)
-
-    logging.info('w_qtensor_.shape')
-    logging.info(w_qtensor_.shape)
+    # logging.info('inp_unf.shape')
+    # logging.info(inp_unf.shape)
+    #
+    # logging.info('w_.shape')
+    # logging.info(w_.shape)
+    #
+    # logging.info('inp_qtensor_unf.shape')
+    # logging.info(inp_qtensor_unf.shape)
+    #
+    # logging.info('w_qtensor_.shape')
+    # logging.info(w_qtensor_.shape)
 
     # loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
     # compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
