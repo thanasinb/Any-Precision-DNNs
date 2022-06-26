@@ -11,7 +11,7 @@ from collections import namedtuple
 from .lut import lut_actual_15, lut_ideal_15
 
 
-lut_diff = lut_ideal_15 - lut_actual_15
+lut_diff = torch.from_numpy(lut_ideal_15 - lut_actual_15)
 
 
 class SwitchBatchNorm2d(nn.Module):
