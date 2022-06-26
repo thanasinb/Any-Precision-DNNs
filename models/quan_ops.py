@@ -243,6 +243,19 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     """
     Function to process an input with a standard convolution
     """
+
+    logging.info('inp_qtensor.shape')
+    logging.info(inp_qtensor.shape)
+
+    logging.info('wgt_qtensor.shape')
+    logging.info(wgt_qtensor.shape)
+
+    logging.info('inp.shape')
+    logging.info(inp.shape)
+
+    logging.info('wgt.shape')
+    logging.info(wgt.shape)
+
     batch_size, in_channels, in_h, in_w = inp.shape
     out_channels, in_channels, kh, kw = wgt.shape
     out_h = int((in_h - kh + 2 * padding[0]) / stride[0] + 1)
@@ -260,9 +273,6 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
                                      stride=stride)
     inp_qtensor_unf = unfold_qtensor(inp_qtensor)
     w_qtensor_ = wgt_qtensor.view(wgt_qtensor.size(0), -1).t()
-
-    # logging.info('qfn.input*n')
-    # logging.info(torch.round(input * n))
 
     # loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
     # compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
