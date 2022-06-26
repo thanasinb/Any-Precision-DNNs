@@ -254,12 +254,15 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     inp_unf = unfold(inp)
     w_ = wgt.view(wgt.size(0), -1).t()
 
-    # unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw),
-    #                                  dilation=dilation,
-    #                                  padding=padding,
-    #                                  stride=stride)
-    # inp_qtensor_unf = unfold_qtensor(input_qtensor)
-    # w_qtensor_ = weight_qtensor.view(weight_qtensor.size(0), -1).t()
+    unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw),
+                                     dilation=dilation,
+                                     padding=padding,
+                                     stride=stride)
+    inp_qtensor_unf = unfold_qtensor(inp_qtensor)
+    w_qtensor_ = wgt_qtensor.view(wgt_qtensor.size(0), -1).t()
+
+    # logging.info('qfn.input*n')
+    # logging.info(torch.round(input * n))
 
     # loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
     # compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
