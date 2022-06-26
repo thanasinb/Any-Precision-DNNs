@@ -132,7 +132,7 @@ def mapMultiplierModel(q_x, q_w):
     res = torch.zeros([q_x.size(0), q_w_t.size(1)])
     for i in range(q_x.size(0)):
         for j in range(q_w_t.size(1)):
-            res[i][j] = sum(lut_diff[q_x[i, :], q_w_t[:, j]])
+            res[i][j] = torch.sum(lut_diff[q_x[i, :], q_w_t[:, j]])
 
     return res
 
