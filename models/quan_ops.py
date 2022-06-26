@@ -277,9 +277,11 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
 
 def conv2d_quantize_fn(bit_list):
     class Conv2d_Q_(Conv2d_Q):
-        def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1,
+        def __init__(self, in_channels, out_channels, kernel_size,
+                     stride=1, padding=0, dilation=1, groups=1,
                      bias=True):
-            super(Conv2d_Q_, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, groups,
+            super(Conv2d_Q_, self).__init__(in_channels, out_channels, kernel_size,
+                                            stride, padding, dilation, groups,
                                             bias)
             self.bit_list = bit_list
             self.w_bit = self.bit_list[-1]
@@ -287,7 +289,7 @@ def conv2d_quantize_fn(bit_list):
             self.fake_quantize_fn_weight = fake_quantize_fn(self.bit_list)
 
         def forward(self, inp, order=None):
-            inp_q,    inp_qtensor    = self.fake_quantize_fn_input(self.inp)
+            inp_q,    inp_qtensor    = self.fake_quantize_fn_input(inp)
             weight_q, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
             return myconv2d_lut(inp_qtensor, weight_qtensor, inp_q, weight_q,
                                 self.bias, self.stride, self.padding,
