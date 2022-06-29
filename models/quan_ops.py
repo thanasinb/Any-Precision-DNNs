@@ -149,8 +149,8 @@ def mapMultiplierModel(q_x, q_w):
         for i in range(q_x.size(1)):
             for j in range(q_w.size(1)):
                 logging.info('lut_diff[q_x[h, i, :], q_w_t[:, j]]')
-                logging.info(q_x[h, i, j])
-                logging.info(q_w[i, j])
+                logging.info(q_x[h, i, j].item())
+                logging.info(q_w[i, j].item())
                 res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
 
     return res
