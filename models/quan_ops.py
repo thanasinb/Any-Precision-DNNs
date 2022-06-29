@@ -240,6 +240,10 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     unfold = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
+
+    logging.info('inp_unf.transpose(1, 2).shape')
+    logging.info(inp_unf.transpose(1, 2).shape)
+
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
     else:
