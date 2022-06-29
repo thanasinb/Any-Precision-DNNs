@@ -241,8 +241,8 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
 
-    logging.info('inp_unf.transpose(1, 2).shape')
-    logging.info(inp_unf.transpose(1, 2).shape)
+    # logging.info('inp_unf.transpose(1, 2).shape')
+    # logging.info(inp_unf.transpose(1, 2).shape)
 
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
@@ -312,6 +312,9 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
 
     logging.info('w_qtensor_.shape')
     logging.info(w_qtensor_.shape)
+
+    logging.info('inp_unf.transpose(1, 2).shape')
+    logging.info(inp_unf.transpose(1, 2).shape)
 
     loss_c = mapMultiplierModel(inp_qtensor_unf.transpose(1, 2).byte(), w_qtensor_.byte()).transpose(1, 2)
     # compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
