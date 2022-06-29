@@ -136,6 +136,9 @@ def mapMultiplierModel(q_x, q_w):
     logging.info('res')
     logging.info(res)
 
+    logging.info('res.shape:')
+    logging.info(res.shape)
+
     logging.info('q_x.shape')
     logging.info(q_x.shape)
 
@@ -312,8 +315,8 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     logging.info('w_qtensor_.shape')
     logging.info(w_qtensor_.shape)
 
-    loss_c = mapMultiplierModel(inp_qtensor_unf.byte(), w_qtensor_.byte().transpose(0, 1)).transpose(1, 2)
-    compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
+    # loss_c = mapMultiplierModel(inp_qtensor_unf.byte(), w_qtensor_.byte().transpose(0, 1)).transpose(1, 2)
+    # compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
 
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
@@ -321,6 +324,9 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
 
     # out_unf = out_unf - compensation
+
+    logging.info('out_unf.shape')
+    logging.info(out_unf.shape)
 
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
     return out.float()
