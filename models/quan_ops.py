@@ -128,7 +128,7 @@ class FakeQuantOp(torch.autograd.Function):  # equivalent to class qfn(torch.aut
 
 def mapMultiplierModel(q_x, q_w):
     # q_w_t = torch.t(q_w)  # y = x.wT + b
-    res = torch.zeros([q_x.size(1), q_w.size(1)])
+    res = torch.zeros([q_x.size(0), q_x.size(1), q_w.size(1)])
 
     logging.info('q_x.shape')
     logging.info(q_x.shape)
@@ -139,11 +139,12 @@ def mapMultiplierModel(q_x, q_w):
     logging.info('res.shape:')
     logging.info(res.shape)
 
-    for i in range(q_x.size(0)):
-        for j in range(q_w.size(1)):
-            logging.info('lut_diff[q_x[i, :], q_w_t[:, j]]')
-            logging.info(lut_diff[q_x[i, :], q_w[:, j]])
-            res[i][j] = torch.sum(lut_diff[q_x[i, :], q_w[:, j]])
+    for h in range(q_x.size(0)):
+        for i in range(q_x.size(1)):
+            for j in range(q_w.size(1)):
+                logging.info('lut_diff[q_x[h, i, :], q_w_t[:, j]]')
+                logging.info(lut_diff[q_x[h, i, :], q_w[:, j]])
+                res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
 
     return res
 
