@@ -139,6 +139,12 @@ def mapMultiplierModel(q_x, q_w):
     logging.info('res.shape:')
     logging.info(res.shape)
 
+    logging.info('q_x.size(0)')
+    logging.info(q_x.size(0))
+
+    logging.info('q_w.size(1)')
+    logging.info(q_w.size(1))
+
     for h in range(q_x.size(0)):
         for i in range(q_x.size(1)):
             for j in range(q_w.size(1)):
