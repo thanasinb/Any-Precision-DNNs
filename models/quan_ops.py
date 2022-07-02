@@ -130,20 +130,20 @@ def mapMultiplierModel(q_x, q_w):
     # q_w_t = torch.t(q_w)  # y = x.wT + b
     res = torch.zeros([q_x.size(0), q_x.size(1), q_w.size(1)])
 
-    logging.info('q_x.shape')
-    logging.info(q_x.shape)
-
-    logging.info('q_w.shape')
-    logging.info(q_w.shape)
-
-    logging.info('res.shape:')
-    logging.info(res.shape)
-
-    logging.info('q_x.size(0)')
-    logging.info(q_x.size(0))
-
-    logging.info('q_w.size(1)')
-    logging.info(q_w.size(1))
+    # logging.info('q_x.shape')
+    # logging.info(q_x.shape)
+    #
+    # logging.info('q_w.shape')
+    # logging.info(q_w.shape)
+    #
+    # logging.info('res.shape:')
+    # logging.info(res.shape)
+    #
+    # logging.info('q_x.size(0)')
+    # logging.info(q_x.size(0))
+    #
+    # logging.info('q_w.size(1)')
+    # logging.info(q_w.size(1))
 
     for h in range(q_x.size(0)):
         for i in range(q_x.size(1)):
@@ -152,12 +152,12 @@ def mapMultiplierModel(q_x, q_w):
                 # logging.info(lut_diff[index_select()])
                 # logging.info(q_x)
                 # logging.info(q_w)
-                logging.info(q_x[h, i, :].tolist())
-                logging.info(q_w[:, j].tolist())
-                logging.info(lut_diff[q_x[h, i, :].tolist(), q_w[:, j].tolist()])
+                # logging.info(q_x[h, i, :].tolist())
+                # logging.info(q_w[:, j].tolist())
+                # logging.info(lut_diff[q_x[h, i, :].tolist(), q_w[:, j].tolist()])
                 # logging.info(torch.index_select(q_w, 1, torch.tensor[j]))
                 # res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
-                # res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
+                res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :].tolist(), q_w[:, j].tolist()])
 
     return res
 
