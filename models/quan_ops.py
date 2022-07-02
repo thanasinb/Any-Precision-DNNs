@@ -154,7 +154,7 @@ def mapMultiplierModel(q_x, q_w):
                 # logging.info(q_w)
                 logging.info(q_x[h, i, :].tolist())
                 logging.info(q_w[:, j].tolist())
-                logging.info(lut_diff[q_x[h, i, :].tolist(), q_w[:, j]].tolist())
+                logging.info(lut_diff[q_x[h, i, :].tolist(), q_w[:, j].tolist()])
                 # logging.info(torch.index_select(q_w, 1, torch.tensor[j]))
                 # res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
                 # res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
