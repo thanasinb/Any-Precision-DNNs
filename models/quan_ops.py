@@ -332,12 +332,12 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
 
     loss_c = mapMultiplierModel(inp_qtensor_unf.transpose(1, 2).byte(), w_qtensor_.byte()).transpose(1, 2)
 
-    print(loss_c)
-    print(loss_c.float())
-    print(inp_qtensor)
-    print(inp_qtensor.scale)
-    print(wgt_qtensor)
-    print(wgt_qtensor.scale)
+    # print(loss_c)
+    # print(loss_c.float())
+    # print(inp_qtensor)
+    # print(inp_qtensor.scale)
+    # print(wgt_qtensor)
+    # print(wgt_qtensor.scale)
 
     compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float().cuda()
 
