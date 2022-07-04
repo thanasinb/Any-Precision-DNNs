@@ -315,17 +315,17 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     inp_qtensor_unf = unfold_qtensor(inp_qtensor.tensor.float())
     w_qtensor_ = wgt_qtensor.tensor.float().view(wgt_qtensor.tensor.float().size(0), -1).t()
 
-    logging.info('inp_unf.shape')
-    logging.info(inp_unf.shape)
-
-    logging.info('w_.shape')
-    logging.info(w_.shape)
-
-    logging.info('inp_qtensor_unf.shape')
-    logging.info(inp_qtensor_unf.shape)
-
-    logging.info('w_qtensor_.shape')
-    logging.info(w_qtensor_.shape)
+    # logging.info('inp_unf.shape')
+    # logging.info(inp_unf.shape)
+    #
+    # logging.info('w_.shape')
+    # logging.info(w_.shape)
+    #
+    # logging.info('inp_qtensor_unf.shape')
+    # logging.info(inp_qtensor_unf.shape)
+    #
+    # logging.info('w_qtensor_.shape')
+    # logging.info(w_qtensor_.shape)
 
     logging.info('inp_unf.transpose(1, 2).shape')
     logging.info(inp_unf.transpose(1, 2).shape)
