@@ -16,7 +16,7 @@
     result_dir="$curr_dir/results/$train_id"
     mkdir -p $result_dir
 
-    python -u $curr_dir/train.py \
+    python3 -u $curr_dir/train.py \
         --model resnet20q \
         --dataset cifar10 \
         --train_split train \
