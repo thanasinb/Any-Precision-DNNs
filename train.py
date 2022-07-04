@@ -45,9 +45,9 @@ def main():
     setup_logging(os.path.join(args.results_dir, 'log_{}.txt'.format(hostname)))
     logging.info("running arguments: %s", args)
 
-    best_gpu = setup_gpus()
-    torch.cuda.set_device(best_gpu)
-    torch.backends.cudnn.benchmark = True
+    # best_gpu = setup_gpus()
+    # torch.cuda.set_device(best_gpu)
+    # torch.backends.cudnn.benchmark = True
 
     train_transform = get_transform(args.dataset, 'train')
     train_data = get_dataset(args.dataset, args.train_split, train_transform)
@@ -67,7 +67,7 @@ def main():
 
     bit_width_list = list(map(int, args.bit_width_list.split(',')))
     bit_width_list.sort()
-    model = models.__dict__[args.model](bit_width_list, train_data.num_classes).cuda()
+    model = models.__dict__[args.model](bit_width_list, train_data.num_classes)
 
     lr_decay = list(map(int, args.lr_decay.split(',')))
     optimizer = get_optimizer_config(model, args.optimizer, args.lr, args.weight_decay)
@@ -77,7 +77,7 @@ def main():
         if os.path.isdir(args.resume):
             args.resume = os.path.join(args.resume, 'model_best.pth.tar')
         if os.path.isfile(args.resume):
-            checkpoint = torch.load(args.resume, map_location='cuda:{}'.format(best_gpu))
+            checkpoint = torch.load(args.resume)
             args.start_epoch = checkpoint['epoch']
             best_prec1 = checkpoint['best_prec1']
             model.load_state_dict(checkpoint['state_dict'])
@@ -90,7 +90,7 @@ def main():
         if os.path.isdir(args.pretrain):
             args.pretrain = os.path.join(args.pretrain, 'model_best.pth.tar')
         if os.path.isfile(args.pretrain):
-            checkpoint = torch.load(args.pretrain, map_location='cuda:{}'.format(best_gpu))
+            checkpoint = torch.load(args.pretrain)
             model.load_state_dict(checkpoint['state_dict'], strict=False)
             logging.info("loaded pretrain checkpoint '%s' (epoch %s)", args.pretrain, checkpoint['epoch'])
         else:
@@ -100,8 +100,8 @@ def main():
     num_parameters = sum([l.nelement() for l in model.parameters()])
     logging.info("number of parameters: %d", num_parameters)
 
-    criterion = nn.CrossEntropyLoss().cuda()
-    criterion_soft = CrossEntropyLossSoft().cuda()
+    criterion = nn.CrossEntropyLoss()
+    criterion_soft = CrossEntropyLossSoft()
     sum_writer = SummaryWriter(args.results_dir + '/summary')
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -160,8 +160,8 @@ def forward(data_loader, model, criterion, criterion_soft, epoch, training=True,
     for i, (input, target) in enumerate(data_loader):
         if not training:
             with torch.no_grad():
-                input = input.cuda()
-                target = target.cuda(non_blocking=True)
+                # input = input.cuda()
+                # target = target.cuda(non_blocking=True)
 
                 for bw, am_l, am_t1, am_t5 in zip(bit_width_list, losses, top1, top5):
                     model.apply(lambda m: setattr(m, 'wbit', bw))
@@ -174,8 +174,8 @@ def forward(data_loader, model, criterion, criterion_soft, epoch, training=True,
                     am_t1.update(prec1.item(), input.size(0))
                     am_t5.update(prec5.item(), input.size(0))
         else:
-            input = input.cuda()
-            target = target.cuda(non_blocking=True)
+            # input = input.cuda()
+            # target = target.cuda(non_blocking=True)
 
             optimizer.zero_grad()
 

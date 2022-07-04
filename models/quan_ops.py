@@ -339,7 +339,7 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     # print(wgt_qtensor)
     # print(wgt_qtensor.scale)
 
-    compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float().cuda()
+    compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
 
     logging.info('loss_c.shape')
     logging.info(loss_c.shape)
