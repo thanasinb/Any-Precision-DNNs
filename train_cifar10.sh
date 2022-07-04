@@ -5,7 +5,7 @@
   pip install gpustat
 
 #    curr_dir="$( cd "$(dirname "$0")" ; pwd -P )"
-    curr_dir="/content/drive/MyDrive/Any-Precision-DNNs"
+    curr_dir="content/drive/MyDrive/Any-Precision-DNNs"
     # Change it when necessary
     # source activate pt
 
