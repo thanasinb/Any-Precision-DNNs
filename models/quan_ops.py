@@ -8,10 +8,11 @@ import torch.nn.functional as F
 import numpy as np
 import logging
 from collections import namedtuple
-from .lut import lut_actual_15, lut_ideal_15
+from .lut import lut_actual_15, lut_ideal_15, lut_actual_7, lut_ideal_7
 
 
 lut_diff = torch.from_numpy(lut_ideal_15 - lut_actual_15)
+# lut_diff = torch.from_numpy(lut_ideal_7 - lut_actual_7)
 
 
 class SwitchBatchNorm2d(nn.Module):
@@ -374,9 +375,12 @@ def conv2d_quantize_fn(bit_list):
         def forward(self, inp, order=None):
             inp_q,    inp_qtensor    = self.fake_quantize_fn_input(inp)
             weight_q, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
-            return myconv2d_lut(inp_qtensor, weight_qtensor, inp_q, weight_q,
+            return myconv2d(inp_q, weight_q,
                                 self.bias, self.stride, self.padding,
                                 self.dilation, self.groups)
+            # return myconv2d_lut(inp_qtensor, weight_qtensor, inp_q, weight_q,
+            #                     self.bias, self.stride, self.padding,
+            #                     self.dilation, self.groups)
 
     return Conv2d_Q_
 
