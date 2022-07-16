@@ -253,9 +253,6 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     inp_qtensor_unf = unfold_qtensor(inp_qtensor.tensor.float())
     w_qtensor_ = wgt_qtensor.tensor.float().view(wgt_qtensor.tensor.float().size(0), -1).t()
 
-    logging.info('inp_unf.transpose(1, 2).shape')
-    logging.info(inp_unf.transpose(1, 2).shape)
-
     loss_c = mapMultiplierModel(inp_qtensor_unf.transpose(1, 2).byte(), w_qtensor_.byte()).transpose(1, 2)
 
     compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
@@ -266,9 +263,6 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
 
     out_unf = out_unf - compensation
-
-    logging.info('out_unf.shape')
-    logging.info(out_unf.shape)
 
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
     return out.float()
