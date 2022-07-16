@@ -131,33 +131,9 @@ def mapMultiplierModel(q_x, q_w):
     # q_w_t = torch.t(q_w)  # y = x.wT + b
     res = torch.zeros([q_x.size(0), q_x.size(1), q_w.size(1)])
 
-    # logging.info('q_x.shape')
-    # logging.info(q_x.shape)
-    #
-    # logging.info('q_w.shape')
-    # logging.info(q_w.shape)
-    #
-    # logging.info('res.shape:')
-    # logging.info(res.shape)
-    #
-    # logging.info('q_x.size(0)')
-    # logging.info(q_x.size(0))
-    #
-    # logging.info('q_w.size(1)')
-    # logging.info(q_w.size(1))
-
     for h in range(q_x.size(0)):
         for i in range(q_x.size(1)):
             for j in range(q_w.size(1)):
-                # logging.info('lut_diff[q_x[h, i, :], q_w_t[:, j]]')
-                # logging.info(lut_diff[index_select()])
-                # logging.info(q_x)
-                # logging.info(q_w)
-                # logging.info(q_x[h, i, :].tolist())
-                # logging.info(q_w[:, j].tolist())
-                # logging.info(lut_diff[q_x[h, i, :].tolist(), q_w[:, j].tolist()])
-                # logging.info(torch.index_select(q_w, 1, torch.tensor[j]))
-                # res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :], q_w[:, j]])
                 res[h][i][j] = torch.sum(lut_diff[q_x[h, i, :].tolist(), q_w[:, j].tolist()])
 
     return res
@@ -180,8 +156,6 @@ class qfn(torch.autograd.Function):
         n = float(2 ** k - 1)
         out = torch.round(input * n) / n
 
-        # logging.info('qfn.input*n')
-        # logging.info(torch.round(input * n))
         return out
 
     @staticmethod
@@ -205,21 +179,11 @@ class weight_quantize_fn(nn.Module):
             weight_q = weight * E
         else:
             E = torch.mean(torch.abs(x)).detach()
-            # logging.info('weight_quantize_fn.E')
-            # logging.info(E)
 
             weight = torch.tanh(x)
             weight = weight / 2 / torch.max(torch.abs(weight)) + 0.5
-            # logging.info('weight_quantize_fn.weight')
-            # logging.info(weight)
-
             weight_q = 2 * qfn.apply(weight, self.wbit) - 1
-            # logging.info('weight_quantize_fn.qfn')
-            # logging.info(qfn.apply(weight, self.wbit))
-
             weight_q = weight_q * E
-            # logging.info('weight_quantize_fn.weight_q')
-            # logging.info(weight)
 
         return weight_q
 
@@ -256,9 +220,6 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
 
-    # logging.info('inp_unf.transpose(1, 2).shape')
-    # logging.info(inp_unf.transpose(1, 2).shape)
-
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
     else:
@@ -273,30 +234,6 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     """
     Function to process an input with a standard convolution
     """
-
-    # logging.info('inp_qtensor')
-    # logging.info(inp_qtensor)
-    #
-    # logging.info('wgt_qtensor')
-    # logging.info(wgt_qtensor)
-    #
-    # logging.info('inp.shape')
-    # logging.info(inp.shape)
-    #
-    # logging.info('wgt.shape')
-    # logging.info(wgt.shape)
-    #
-    # logging.info('inp_qtensor.tensor.type')
-    # logging.info(inp_qtensor.tensor.type())
-    #
-    # logging.info('wgt_qtensor.tensor.type')
-    # logging.info(wgt_qtensor.tensor.type())
-    #
-    # logging.info('inp.type')
-    # logging.info(inp.type())
-    #
-    # logging.info('wgt.type')
-    # logging.info(wgt.type())
 
     batch_size, in_channels, in_h, in_w = inp.shape
     out_channels, in_channels, kh, kw = wgt.shape
@@ -316,34 +253,12 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     inp_qtensor_unf = unfold_qtensor(inp_qtensor.tensor.float())
     w_qtensor_ = wgt_qtensor.tensor.float().view(wgt_qtensor.tensor.float().size(0), -1).t()
 
-    # logging.info('inp_unf.shape')
-    # logging.info(inp_unf.shape)
-    #
-    # logging.info('w_.shape')
-    # logging.info(w_.shape)
-    #
-    # logging.info('inp_qtensor_unf.shape')
-    # logging.info(inp_qtensor_unf.shape)
-    #
-    # logging.info('w_qtensor_.shape')
-    # logging.info(w_qtensor_.shape)
-
     logging.info('inp_unf.transpose(1, 2).shape')
     logging.info(inp_unf.transpose(1, 2).shape)
 
     loss_c = mapMultiplierModel(inp_qtensor_unf.transpose(1, 2).byte(), w_qtensor_.byte()).transpose(1, 2)
 
-    # print(loss_c)
-    # print(loss_c.float())
-    # print(inp_qtensor)
-    # print(inp_qtensor.scale)
-    # print(wgt_qtensor)
-    # print(wgt_qtensor.scale)
-
     compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
-
-    logging.info('loss_c.shape')
-    logging.info(loss_c.shape)
 
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
