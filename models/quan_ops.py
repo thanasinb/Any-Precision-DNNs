@@ -254,7 +254,6 @@ def myconv2d_lut(inp_qtensor, wgt_qtensor, inp, wgt,
     w_qtensor_ = wgt_qtensor.tensor.float().view(wgt_qtensor.tensor.float().size(0), -1).t()
 
     loss_c = mapMultiplierModel(inp_qtensor_unf.transpose(1, 2).byte(), w_qtensor_.byte()).transpose(1, 2)
-
     compensation = inp_qtensor.scale * wgt_qtensor.scale * loss_c.float()
 
     if bias is None:
