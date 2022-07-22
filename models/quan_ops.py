@@ -241,7 +241,7 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     else:
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
-    return out.float()
+    return out.float()*1.156  # INSERT STD DEV OF 15.6% TO THE CONVOLUTION LAYER'S OUTPUT
 
 
 def myconv2d_lut(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(1, 1), groups=1):
