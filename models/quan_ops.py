@@ -241,7 +241,8 @@ def myconv2d(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(
     else:
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
-    return out.float()*1.156  # INSERT STD DEV OF 15.6% TO THE CONVOLUTION LAYER'S OUTPUT
+    return out.float()
+    # return out.float()*1.156  # INSERT STD DEV OF 15.6% TO THE CONVOLUTION LAYER'S OUTPUT
 
 
 def myconv2d_lut(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilation=(1, 1), groups=1):
@@ -257,48 +258,10 @@ def myconv2d_lut(input, weight, bias=None, stride=(1, 1), padding=(0, 0), dilati
     inp_unf = unfold(input)
     w_ = weight.view(weight.size(0), -1).t()
 
-    # unfold_qtensor = torch.nn.Unfold(kernel_size=(kh, kw), dilation=dilation, padding=padding, stride=stride)
-    # inp_qtensor_unf = unfold_qtensor(input_qtensor)
-    # w_qtensor_ = weight_qtensor.view(weight_qtensor.size(0), -1).t()
-
-    # logging.info('input (fake quantized): ')
-    # logging.info(input)
-    # logging.info('weight (fake quantized): ')
-    # logging.info(weight)
-    # logging.info('input (fake quantized) unfold: ')
-    # logging.info(inp_unf)
-    # logging.info('weight (fake quantized) unfold: ')
-    # logging.info(w_)
-    # logging.info('input (fake quantized) unfold.shape: ')
-    # logging.info(inp_unf.shape)
-    # logging.info('weight (fake quantized) unfold.shape: ')
-    # logging.info(w_.shape)
-    # logging.info('input qtensor: ')
-    # logging.info(input_qtensor)
-    # logging.info('weight qtensor: ')
-    # logging.info(weight_qtensor)
-    # logging.info('input qtensor.shape: ')
-    # logging.info(input_qtensor.shape)
-    # logging.info('weight qtensor.shape: ')
-    # logging.info(weight_qtensor.shape)
-    # logging.info('input qtensor (fake quantized) unfold: ')
-    # logging.info(inp_qtensor_unf)
-    # logging.info('weight qtensor (fake quantized) unfold: ')
-    # logging.info(w_qtensor_)
-    # logging.info('input (fake quantized) unfold.shape: ')
-    # logging.info(inp_qtensor_unf.shape)
-    # logging.info('weight (fake quantized) unfold.shape: ')
-    # logging.info(w_qtensor_.shape)
-
-    # loss_c = mapMultiplierModel(inp_qtensor_unf.tensor.transpose(1, 2), w_qtensor_.tensor).transpose(1, 2)
-    # compensation = inp_qtensor_unf.tensor * w_qtensor_.tensor * loss_c
-
     if bias is None:
         out_unf = inp_unf.transpose(1, 2).matmul(w_).transpose(1, 2)
     else:
         out_unf = (inp_unf.transpose(1, 2).matmul(w_) + bias).transpose(1, 2)
-
-    # out_unf = out_unf - compensation
 
     out = out_unf.view(batch_size, out_channels, out_h, out_w)
     return out.float()
@@ -312,14 +275,13 @@ def conv2d_quantize_fn(bit_list):
                                             bias)
             self.bit_list = bit_list
             self.w_bit = self.bit_list[-1]
-            # self.quantize_fn = weight_quantize_fn(self.bit_list)
             self.fake_quantize_fn_weight = fake_quantize_fn(self.bit_list)
-            # self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
+            self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
 
         def forward(self, input, order=None):
-            # weight_q = self.quantize_fn(self.weight)
+            input_q = self.fake_quantize_fn_input(input)
             weight_q = self.fake_quantize_fn_weight(self.weight)
-            return myconv2d(input, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            return myconv2d(input_q, weight_q, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
         # def forward(self, input, order=None):
         #     # weight, weight_qtensor = self.fake_quantize_fn_weight(self.weight)
@@ -343,11 +305,14 @@ def linear_quantize_fn(bit_list):
             super(Linear_Q_, self).__init__(in_features, out_features, bias)
             self.bit_list = bit_list
             self.w_bit = self.bit_list[-1]
-            self.quantize_fn = weight_quantize_fn(self.bit_list)
+            self.fake_quantize_fn_weight = weight_quantize_fn(self.bit_list)
+            self.fake_quantize_fn_input  = fake_quantize_fn(self.bit_list)
 
         def forward(self, input):
-            weight_q = self.quantize_fn(self.weight)
-            return F.linear(input, weight_q, self.bias)
+            input_q  = self.fake_quantize_fn_input (input)
+            weight_q = self.fake_quantize_fn_weight(self.weight)
+            # return F.linear(input_q, weight_q, self.bias)
+            return torch.add(torch.mm(input_q, weight_q.t()), self.bias)
 
     return Linear_Q_
 
